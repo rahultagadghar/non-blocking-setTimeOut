@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<meta charset=`utf-8` />
+<title>Non-blocking</title>
+<h1>Non-blocking code without using browser api</h1>
+
+<script src="/socket.io/socket.io.js"> </script>
+<script>
+    const { log } = console;
+    const socket = io.connect(`http://localhost:3000/`);
+    const CHANNEL = `EMIT_BACK`;
+    const CONNECT = `connect`;
+
+    socket.on(CONNECT, () => {
+        log(`connected`);
+    });
+
+    const customSetTimeOut = (callBack, ms) => {
+        const start = Date.now() + ms;
+
+        socket.on(CHANNEL, () => {
+            if (start <= Date.now()) {
+                return callBack();
+            }
+            socket.emit(CHANNEL);
+        });
+
+        socket.emit(CHANNEL)
+    }
+
+    const workerProcess = () => {
+        log("Awesome!")
+    };
+
+    customSetTimeOut(workerProcess, 3000)
+
+</script>
